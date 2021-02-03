@@ -182,8 +182,17 @@
 </template>
 
 <script>
-
+import db from './firebase/firestore.js'
 export default {
+  mounted: function() {
+    // firestoreからデータを取ってくる処理
+    db.collection('#コロナ').get().then(res => {
+      res.forEach(doc => {
+        const data = doc.data()
+        console.log(data)
+      });
+    })
+  }
 }
 </script>
 
