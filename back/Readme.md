@@ -2,7 +2,7 @@
 APIキー直書きスタイルなので，Githubにはキー無しをアップしています．<br>
 それに合わせて，キー無しを区別するため最後に_copyをつけています．<br>
 
-- Backend.py<br>
+- BackendMain.py<br>
 メインクラス
   * Tweetの取得
   * evaluationFunctionの呼び出し
