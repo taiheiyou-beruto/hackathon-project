@@ -13,7 +13,7 @@ TWEET_NUM = 10
 
 def FireStore_Write(mDF, keyword):
     # FireStoreプロジェクトの秘密鍵を発行して，秘密鍵の入ったJSONを指定
-    cred = credentials.Certificate("fireStore_taiheiyou_cred.json")
+    cred = credentials.Certificate("hackathon-project-fe887-firebase-adminsdk-hvct6-4370fb58c5.json")
     firebase_admin.initialize_app(cred)
     db = firestore.client()
 
