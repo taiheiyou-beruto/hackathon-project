@@ -86,7 +86,13 @@ export default {
 footer{
   width: 80%;
   margin: 0 auto;
-  font-size: calc(5px + 1.2vw);
+  font-size: calc(10px + 1.2vw);
   margin-top: 4rem;
+}
+
+@media screen and (max-width: 575px){
+  .body{
+    padding-top: 6rem;
+  }
 }
 </style>
