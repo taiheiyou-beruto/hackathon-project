@@ -3,7 +3,7 @@ import pandas as pd
 import json
 
 class tweetAnalysis:
-    # コンストラクタの引数としてtweetのデータが格納されているjsonファイルのパス
+    # コンストラクタの引数にjsonファイルのパス
     def __init__(self, filePath):
         # Twitterからデータをとれた場合を想定したデータを取得
         self.filePath = filePath
@@ -13,8 +13,8 @@ class tweetAnalysis:
         # json --> pandas.DataFrame
         data = []
         for line in res["statuses"]:
-            data.append([line["id"], line["created_at"], line["text"], line["user"]["name"], line["user"]["description"],
-                        line["user"]["followers_count"], int(line["user"]["friends_count"]), line["user"]["verified"],
+            data.append([line["id"], line["created_at"], line["full_text"], line["user"]["name"], line["user"]["description"],
+                        line["user"]["followers_count"], line["user"]["friends_count"], line["user"]["verified"],
                         line["user"]["listed_count"], line["favorite_count"], line["retweet_count"]])
 
         self.df = pd.DataFrame(data,
@@ -36,15 +36,44 @@ class tweetAnalysis:
 
     # 正規化するための関数
     def normalize(self, x, min_x, max_x):
+        # 例外処理
+        if(max_x == min_x):
+            return 0
         return (x - min_x) / (max_x - min_x)
     
+    def normalize_column(self, columnName):
+        new_columnName = "normalized_" + columnName # 実装時は不必要
+        maximum = self.df[columnName].max() # 最大値
+        minimum = self.df[columnName].min() # 最小値
+        self.df[new_columnName] = self.df[columnName].apply(lambda x : self.normalize(x, minimum, maximum))
+
+    def normalize_column_withUpper(self, columnName, upperLimit):
+        new_columnName = "normalized_" + columnName # 実装時は不必要
+        minimum = self.df[columnName].min() # 最小値
+        self.df[new_columnName] = self.df[columnName].apply(lambda x : self.normalize(x, minimum, upperLimit))
+        self.df[new_columnName] = self.df[new_columnName].where(self.df[new_columnName] < 1, 1)
+
+    def standardize(self, x, mu, sigma):
+        if sigma == 0:
+            return 1.
+        return (x-mu) / sigma * 10 + 50
+
+    # 値の偏差値を計算 評価値を偏差値かする時に使用
+    def standardize_column(self, columnName):
+        mu    = self.df[columnName].mean() # 平均値
+        sigma = self.df[columnName].std()  # 標準偏差
+        self.df[columnName] = self.df[columnName].apply(lambda x : self.standardize(x, mu, sigma))
+
+    # 評価値を算出
     def calculateEvaluationValue(self):
         # 各特徴量の上限値の定義
-        max_favorite_count = 200
-        max_ff_rate = 500.0
-        max_listed_count = 1100
+        upper_favorite_count = 200
+        upper_ff_rate = 500.0
+        upper_listed_count = 1100
 
         # フォロワー数とフォロー数の比
+        # その前に前処理として，フォロー数が0だと比を出せないので，フォロー数が0のときは1とする．
+        self.df["friends_count"] = self.df["friends_count"].where(self.df["friends_count"] != 0, 1)
         self.df["ff_rate"] = self.df["followers_count"] / self.df["friends_count"]
         # プロフィールの文字数
         self.df["description_word_count"] = self.df["description"].apply(lambda x : len(x))
@@ -54,24 +83,26 @@ class tweetAnalysis:
         self.df["description_DesuMasu_count"] = self.df["description"].apply(lambda x : self.countDesuMasu(x))
 
         # 正規化（上限値あり）
-        self.df["normalized_favorite_count"] = self.df["favorite_count"] / max_favorite_count
-        self.df.normalized_favorite_count = self.df.normalized_favorite_count.where(self.df.normalized_favorite_count < 1, 1)
-        self.df["normalized_ff_rate"] = self.df["ff_rate"] / max_ff_rate
-        self.df.normalized_ff_rate = self.df.normalized_ff_rate.where(self.df.normalized_ff_rate < 1, 1)
-        self.df["normalized_listed_count"] = self.df["listed_count"] / max_listed_count
-        self.df.normalized_listed_count = self.df.normalized_listed_count.where(self.df.normalized_listed_count < 1, 1)
+        # https://www.datarobot.com/jp/blog/datarobot-finds-false-rumors-on-sns/ より上限値がわかる場合，こちらを採用
+        self.normalize_column_withUpper("favorite_count", upper_favorite_count)
+        self.normalize_column_withUpper("ff_rate", upper_ff_rate)
+        self.normalize_column_withUpper("listed_count", upper_listed_count)
 
         # 正規化（上限値なし）
-        self.df["normalized_text_word_count"] = self.df["text_word_count"].apply(lambda x : self.normalize(x, self.df["text_word_count"].max(), self.df["text_word_count"].min()))
-        self.df["normalized_retweet_count"] = self.df["retweet_count"].apply(lambda x : self.normalize(x, self.df["retweet_count"].max(), self.df["retweet_count"].min()))
+        self.normalize_column("text_word_count")
+        self.normalize_column("retweet_count")
+        self.normalize_column("description_word_count")
 
         # 評価値 まだ検討中
         self.df["point"] = 7*self.df["normalized_favorite_count"] + 5*self.df["normalized_ff_rate"] + 4.5*self.df["listed_count"] + 3.5*self.df["normalized_retweet_count"] + 10*self.df["verified"]
 
+        self.standardize_column("point") # 非デマ度（評価値）を偏差値として出力
+
+    # data frameのcsv出力
     def outputCsvFile(self):
         self.df.to_csv("tweet_data.csv", index=False)# test
 
-    # dataframeを加工して評価値を計算したので，初期化
+    # dataframeを初期化
     def initializeTweetDataFrame(self):
         f = open(self.filePath, "r", encoding="utf-8")
         res = json.load(f)
@@ -79,7 +110,7 @@ class tweetAnalysis:
         # json --> pandas.DataFrame
         data = []
         for line in res["statuses"]:
-            data.append([line["id"], line["created_at"], line["text"], line["user"]["name"], line["user"]["description"],
+            data.append([line["id"], line["created_at"], line["full_text"], line["user"]["name"], line["user"]["description"],
                         line["user"]["followers_count"], int(line["user"]["friends_count"]), line["user"]["verified"],
                         line["user"]["listed_count"], line["favorite_count"], line["retweet_count"]])
 
@@ -87,8 +118,8 @@ class tweetAnalysis:
                     columns=["id", "time", "text", "username", "description", "followers_count", "friends_count", "verified", "listed_count", "favorite_count", "retweet_count"])
     
 # インスタンスの生成
-tA = tweetAnalysis("testData.json")
+tA = tweetAnalysis("test_new.json")
 tA.calculateEvaluationValue()
 tA.outputCsvFile()
-# tA.initializeTweetDataFrame()
 # tA.outputCsvFile()
+# tA.initializeTweetDataFrame()
