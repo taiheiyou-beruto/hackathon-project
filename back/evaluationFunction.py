@@ -29,11 +29,25 @@ class tweetAnalysis:
         self.df = self.df.astype({"favorite_count" : int})
         self.df = self.df.astype({"retweet_count" : int})
 
-    # 文字列に「です」「ます」がいくつ含まれるかを返す
-    def countDesuMasu(self, str):
-        desu_count = str.count("です")
-        masu_count = str.count("ます")
-        return desu_count + masu_count
+    # 文字列に「です」「ます」などがいくつ含まれるかを返す
+    def count_word(self, str):
+        words = ["です", "ます", "公式", "アカウント", "情報"] # 非デマの傾向が強いワード
+        wordCount = 0
+        for word in words:
+            wordCount += str.count(word)
+        return wordCount
+
+    def count_PN_word(self, str):
+        positive = ["愉快な", "面白い", "楽しい", "嬉しい", "喜ばしい", "誇らしい", "清々しい", "陽気な", "快調な", "爽やかな", "機嫌良い", "元気な", "生き生き", "うきうき", "わくわく", "快い", "心地よい", "微笑ましい", "麗しい", "気持ちいい", "穏やかな", "落ち着いた", "長閑な", "安らいだ", "快適な", "和やかな"]
+        negative = ["不愉快な", "不快な", "腹立たしい", "忌忌しい", "忌まわしい", "苛立たしい", "もどかしい", "歯痒い", "ひどい", "憤怒", "腹立ち", "立腹", "いらいら", "胸くそ悪い", "馬鹿らしい", "むっとした", "かっとした", "むしゃくしゃした", "憎らしい", "鬱陶しい", "煩わしい", "苦い", "苦々しい", "悔しい", "情けない", "恨めしい", "怖い", "恐ろしい", "おっかない", "はらはら", "怪しい", "解せない", "訝しい", "重苦しい", "物憂い", "さみしい", "悲しい", "切ない", "苦しい", "辛い", "やるせない", "悩ましい", "憂い", "やりきれない", "いたたまれない", "狂おしい", "心細い", "心許せない", "気味悪い", "おろおろ", "くよくよ", "不安な", "気がかりな", "沈んだ", "悲観した", "胡散臭い", "無気力な", "ぼんやりした", "退屈な", "だるい", "つまらない"]
+        positiveCount = 0
+        negativeCount = 0
+        for p in positive:
+            positiveCount += str.count(p)
+        
+        for n in negative:
+            negativeCount += str.count(n)
+        return positiveCount - negativeCount
 
     # 正規化するための関数
     def normalize(self, x, min_x, max_x):
@@ -65,7 +79,7 @@ class tweetAnalysis:
         sigma = self.df[columnName].std()  # 標準偏差
         self.df[columnName] = self.df[columnName].apply(lambda x : self.standardize(x, mu, sigma))
 
-    # アカウント作成時からアカウント年齢を計算
+    # アカウント作成時からアカウント年齢を計算 (日数)
     def calculateAccountAge(self, str):
         month_dict = {"Jan":1, "Feb":2, "Mar":3, "Apr":4, "May":5, "Jun":6, "Jul":7, "Aug":8, "Sep":9, "Oct":10, "Nov":11, "Dec":12}
         year  = int(str[len(str)-4:len(str)])
@@ -81,6 +95,13 @@ class tweetAnalysis:
         upper_favorite_count = 200
         upper_ff_rate = 500.0
         upper_listed_count = 1100
+        upper_followers_count = 3000
+        upper_text_word_count = 140
+        upper_retweet_count = 10000
+        upper_statuses_count = 2000
+        upper_description_word_count = 160
+        upper_account_age = 365
+        upper_PN_word_count = 5
 
         # フォロワー数とフォロー数の比
         # その前に前処理として，フォロー数が0だと比を出せないので，フォロー数が0のときは1とする．
@@ -91,26 +112,39 @@ class tweetAnalysis:
         # ツイート本文の文字数
         self.df["text_word_count"] = self.df["text"].apply(lambda x : len(x))
         # プロフィールの「です」「ます」の数
-        self.df["description_DesuMasu_count"] = self.df["description"].apply(lambda x : self.countDesuMasu(x))
+        self.df["description_DesuMasu_count"] = self.df["description"].apply(lambda x : self.count_word(x))
         # アカウントが作られてからの日数を計算
         self.df["account_age"] = self.df["time"].apply(lambda str : self.calculateAccountAge(str))
+        # 文章の感情を表す指数
+        self.df["PN_word_count"] = self.df["text"].apply(lambda str : self.count_PN_word(str))
 
         # 正規化（上限値あり）
         # https://www.datarobot.com/jp/blog/datarobot-finds-false-rumors-on-sns/ より上限値がわかる場合，こちらを採用
         self.normalize_column_withUpper("favorite_count", upper_favorite_count)
         self.normalize_column_withUpper("ff_rate", upper_ff_rate)
         self.normalize_column_withUpper("listed_count", upper_listed_count)
+        self.normalize_column_withUpper("followers_count", upper_followers_count)
+        self.normalize_column_withUpper("text_word_count", upper_text_word_count)
+        self.normalize_column_withUpper("retweet_count", upper_retweet_count)
+        self.normalize_column_withUpper("statuses_count", upper_statuses_count) # 総ツイート数
+        self.normalize_column_withUpper("description_word_count", upper_description_word_count)
+        self.normalize_column_withUpper("account_age", upper_account_age)
+        self.normalize_column_withUpper("PN_word_count", upper_PN_word_count)
 
         # 正規化（上限値なし）
-        self.normalize_column("followers_count")
-        self.normalize_column("text_word_count")
-        self.normalize_column("retweet_count")
-        self.normalize_column("statuses_count") # 総ツイート数
-        self.normalize_column("description_word_count")
-        self.normalize_column("account_age")
+        # 抽出したツイートに依存する相対的な値ではなく，絶対的な値にするためにすべての上限値を指定し正規化した
 
         # 評価値 まだ検討中
-        self.df["point"] = 7*self.df["normalized_favorite_count"] + 5*self.df["normalized_ff_rate"] + 5*self.df["normalized_followers_count"] + 4.5*self.df["normalized_listed_count"] + 3.5*self.df["normalized_retweet_count"] + 10*self.df["verified"] + 3.4*self.df["normalized_account_age"] + 3*self.df["normalized_statuses_count"]
+        self.df["point"] = 7   * self.df["normalized_favorite_count"] \
+                         + 5   * self.df["normalized_ff_rate"] \
+                         + 5   * self.df["normalized_followers_count"] \
+                         + 4.5 * self.df["normalized_listed_count"] \
+                         + 3.5 * self.df["normalized_retweet_count"] \
+                         + 30  * self.df["verified"] \
+                         + 3.4 * self.df["normalized_account_age"] \
+                         + 3   * self.df["normalized_statuses_count"] \
+                         - 2.0 * self.df["normalized_text_word_count"] \
+                         + 1.0 * self.df["normalized_PN_word_count"]
 
         self.standardize_column("point") # 非デマ度（評価値）を偏差値として出力
 
@@ -134,11 +168,12 @@ class tweetAnalysis:
 
         self.df = pd.DataFrame(data,
                     columns=["id", "time", "text", "username", "description", "followers_count", "friends_count", "verified", "listed_count", "favorite_count", "retweet_count", "statuses_count"])
-    
-# インスタンスの生成
-tA = tweetAnalysis("test_new.json")
-tA.calculateEvaluationValue()
-tA.outputCsvFile()
 
-# tA.outputCsvFile()
-# tA.initializeTweetDataFrame()
+if __name__ == "__main__":
+    # インスタンスの生成
+    tA = tweetAnalysis("test_new.json")
+    tA.calculateEvaluationValue()
+    tA.outputCsvFile()
+
+    # tA.outputCsvFile()
+    # tA.initializeTweetDataFrame()
