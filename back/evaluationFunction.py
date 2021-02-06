@@ -89,6 +89,10 @@ class tweetAnalysis:
         dt_now = datetime.date.today()
         return (dt_now-created_at).days
 
+    # シグモイド関数
+    def sigmoid(self, x):
+        return 1. / (1+np.exp(-x))
+
     # 評価値を算出
     def calculateEvaluationValue(self):
         # 各特徴量の上限値の定義
@@ -161,6 +165,8 @@ class tweetAnalysis:
                          + weight[8] * self.df["normalized_account_age"] \
                          + weight[9] * self.df["normalized_PN_word_count"] \
                          + intercept
+
+        self.df["point"] = self.df["point"].apply(lambda x : self.sigmoid(x)) # 上で計算した線形和をシグモイド関数に通す
 
         self.standardize_column("point") # 非デマ度（評価値）を偏差値として出力
 
