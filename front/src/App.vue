@@ -1,84 +1,115 @@
-
 <template>
-  <div>
-    <h1>都道府県累計感染者数</h1>
-      <div id="app">
-        <bar :chart-data="graphData"></bar>
-      
-      </div>
+  <div class="body">
+    <header>
+      <nav class="navbar navbar-expand-sm fixed-top navbar-dark bg-dark">
+        <div class="title-block" style="margin-left: 2rem;">
+          <a class="navbar-brand" href="#" style="font-size: 3rem;">CIiT</a>
+        </div>
+        <div class="collapse navbar-collapse" id="navbarNav" style="font-size: 1.3rem;">
+          <ul class="navbar-nav">
+            <li class="nav-item menu-list">
+              <router-link to="/" class="nav-link">Home</router-link>
+            </li>
+            <li class="nav-item menu-list">
+              <router-link to="/twitter" class="nav-link">Twitter</router-link>
+            </li>
+            <li class="nav-item menu-list">
+              <router-link to="/informations" class="nav-link">COVID-19 informations</router-link>
+            </li>
+            <li class="nav-item menu-list">
+              <router-link to="/contact" class="nav-link">Contact</router-link>
+            </li>
+          </ul>
+        </div>
+
+
+        <div class="pos-f-t smart-menu" style="width: 100%;">
+          <div class="collapse" id="navbarToggleExternalContent">
+          <div class="bg-dark p-4">
+            <router-link to="/" class="nav-link">Home</router-link>
+            <router-link to="/twitter" class="nav-link">Twitter</router-link>
+            <router-link to="/informations" class="nav-link">COVID-19 informations</router-link>
+            <router-link to="/contact" class="nav-link">Contact</router-link>
+          </div>
+          </div>
+          <button class="navbar-toggler menu-btn" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </div>
+
+        <div class="team-icon">
+          <img src="./img/team-icon.png" alt="" width="90">
+        </div>
+      </nav>
+    </header>
+
+    <div class="main">
+      <router-view />
+    </div>
   </div>
 </template>
 
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&display=swap');
 
+.title-block{
+  margin-left: 2rem;
+}
 
-<script>
+.team-icon{
+  margin-right: 2rem;
+}
 
-import axios from 'axios'
-import Bar from './bar'
+.menu-list{
+  margin: 0 10px;
+  font-size: calc(8px + 1.2vw);
+}
 
-export default {
-  components: {
-    Bar
-  },
+.menu-btn{
+  margin-right: 0;
+}
 
-//API格納用のプロパティ 都道府県累計感染者数
-  data: function(){
-    return{
-      acp: [],
-    }
-  },
+.smart-menu{
+  display: none;
+}
 
-//axiosによるデータ取得処理
-  mounted: function(){
-    let _this=this
-    console.log(this.acp)
-    axios.get('https://data.corona.go.jp/converted-json/covid19japan-all.json')
-    .then(function(response){
-        //デバッグ用にconsoleに出力
-        console.log(response.data[0].area)
-        _this.acp = response.data[0].area
-    })
-    .catch(function(error){
-        console.log(error)
-    })
-  },
-  computed: {
-    graphData() {
-      const labels = this.acp.map(x => x.name_jp);
-      console.log(labels);
-      const nps = this.acp.map(y =>y.npatients)
-      return ({
-        labels,
-        datasets: [{
-            label: '都道府県累計感染者数',
-            data: nps,
-            borderWidth: 1,
-            barPercentage: 0.8
-        }]
-      })
-    }
+.body {
+  height: 100vh;
+  background: #afafaf;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.card-deck{
+  margin-top: 2rem;
+}
+
+.card-image{
+  margin: 0.5rem;
+}
+
+.card-view-button{
+  margin-top: 2rem;
+}
+
+@media screen and (max-width: 735px){
+  .team-icon{
+    display: none;
   }
-}  
-
-
-
-</script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
 }
 
+@media screen and (max-width: 575px){
+  .title-block{
+    display: none;
+  }
 
- 
-body {
-  background: rgb(139, 38, 38);
+  .smart-menu{
+    display: block;
+  }
+
+  .nav-link{
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+    font-size: 1.2rem;
+  }
 }
-
-
 </style>
