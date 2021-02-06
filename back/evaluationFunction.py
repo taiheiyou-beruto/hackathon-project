@@ -134,17 +134,33 @@ class tweetAnalysis:
         # 正規化（上限値なし）
         # 抽出したツイートに依存する相対的な値ではなく，絶対的な値にするためにすべての上限値を指定し正規化した
 
-        # 評価値 まだ検討中
-        self.df["point"] = 7   * self.df["normalized_favorite_count"] \
-                         + 5   * self.df["normalized_ff_rate"] \
-                         + 5   * self.df["normalized_followers_count"] \
-                         + 4.5 * self.df["normalized_listed_count"] \
-                         + 3.5 * self.df["normalized_retweet_count"] \
-                         + 30  * self.df["verified"] \
-                         + 3.4 * self.df["normalized_account_age"] \
-                         + 3   * self.df["normalized_statuses_count"] \
-                         - 2.0 * self.df["normalized_text_word_count"] \
-                         + 1.0 * self.df["normalized_PN_word_count"]
+        # 評価値 まだ検討中 サイトを参考に設計した関数
+        # self.df["point"] = 7   * self.df["normalized_favorite_count"] \
+        #                  + 5   * self.df["normalized_ff_rate"] \
+        #                  + 4.5 * self.df["normalized_listed_count"] \
+        #                  + 5   * self.df["normalized_followers_count"] \
+        #                  - 2.0 * self.df["normalized_text_word_count"] \
+        #                  + 3.5 * self.df["normalized_retweet_count"] \
+        #                  + 30  * self.df["verified"] \
+        #                  + 1.0 * self.df["description_word_count"] \
+        #                  + 3.4 * self.df["normalized_account_age"] \
+        #                  + 3   * self.df["normalized_statuses_count"] \
+        #                  + 1.0 * self.df["normalized_PN_word_count"] \
+
+        # 評価値 機械学習によって設計した関数
+        weight = [2.88378753e-01,  1.09981905e-02,  1.06539567e+00,  2.44878541e-01, 7.02692795e-01,  2.61992725e-01,  3.98023040e-04,  6.55518246e-01, -3.28718707e-02,  3.02847389e-01]
+        intercept = 0.02412579
+        self.df["point"] = weight[0] * self.df["verified"]\
+                         + weight[1] * self.df["normalized_favorite_count"] \
+                         + weight[2] * self.df["normalized_ff_rate"] \
+                         + weight[3] * self.df["normalized_listed_count"] \
+                         + weight[4] * self.df["normalized_followers_count"] \
+                         + weight[5] * self.df["normalized_text_word_count"] \
+                         + weight[6] * self.df["normalized_retweet_count"] \
+                         + weight[7] * self.df["normalized_description_word_count"] \
+                         + weight[8] * self.df["normalized_account_age"] \
+                         + weight[9] * self.df["normalized_PN_word_count"] \
+                         + intercept
 
         self.standardize_column("point") # 非デマ度（評価値）を偏差値として出力
 
