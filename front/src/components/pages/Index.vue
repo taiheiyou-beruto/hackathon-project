@@ -4,7 +4,7 @@
       <div class="container">
         <div class="row">
           <div class="main-text-block col-lg-12 col-xs-12">
-            <h1 class="main-text-h1">CIiT(COVID-19 Informations in Twiter)へようこそ！</h1>
+            <h1 class="main-text-h1">CIiT(COVID-19 Informations in Twitter)へようこそ！</h1>
           </div>
         </div>
       </div>
@@ -35,7 +35,7 @@
                 <p>・ツイートはTwitter APIから取得しており、改ざん等は一切行っておりません</p>
                 <p>・このサイトを運営する上で以下URLのTwitter社の開発者利用規約を遵守しています</p>
                 <p><a href="https://developer.twitter.com/en/developer-terms/agreement-and-policy">https://developer.twitter.com/en/developer-terms/agreement-and-policy</a></p>
-                <p>・Twiiter APIで取ってきたデータは評価値の計算以外の目的に使用いたしません</p>
+                <p>・Twitter APIで取ってきたデータは評価値の計算以外の目的に使用いたしません</p>
                 <p>・情報の表示の信頼性は上から順に高くなり、下にいくほど低くなっています</p>
                 <p>・このサイトはプロトタイプとなっています。完成版ではありません</p>
                 <p>・あらゆる情報に惑わされず、自分自身で取捨選択するようにしてください</p>
