@@ -8,6 +8,9 @@
               <div class="text-center card-image">
                 <img :src="item.profile_banner_url" class="card-img-top rounded-lg img-fluid" alt="背景画像が設定されていません">
               </div>
+              <div class="text-center profile-img-block">
+                <img :src="item.profile_image_url" alt="" class="profile-img">
+              </div>
               <div class="card-body">
                 <p class="card-point">正確度偏差値: <span class="point">{{ item.point }}</span></p>
                 <h5 class="card-title">{{ item.username }}</h5>
@@ -27,21 +30,27 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalCenterTitle">ツイート</h5>
+              <h5 class="modal-title" id="exampleModalCenterTitle">ツイートの詳細情報</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body modal-text" v-if="!!twitterDetail">
-              <h5>{{ twitterDetail.username }}</h5>
-              <hr align="center" class="border">
+              <h4>{{ twitterDetail.username }}</h4>
               <p>{{ twitterDetail.description }}</p>
+              <div class="friend-count">
+                <p>フォロワー数: {{ twitterDetail.followers_count}} </p>
+                <p>フォロー中: {{ twitterDetail.friends_count }} </p>
+              </div>
               <hr align="center" class="border">
               <p>{{ twitterDetail.text }}</p>
               <div class="twitter-count">
-                <p>いいね数: {{ twitterDetail.favorite_count }} </p>
-                <p>フォロワー数: {{ twitterDetail.followers_count}} </p>
-                <p>フォロー中: {{ twitterDetail.friends_count }} </p>
+                <p>♡ {{ twitterDetail.favorite_count }} </p>
+                <p><img src="../../img/retweet-icon.svg" alt="retweet" width="20rem" class="retweet-img"> {{ twitterDetail.retweet_count }}</p>
+              </div>
+              <hr align="center" class="border">
+              <div class="text-center">
+                <p>ツイートされた時間: {{ twitterDetail.time }}</p>
               </div>
             </div>
             <div class="modal-footer">
@@ -79,7 +88,7 @@ export default {
   mounted: async function() {
 
     // firestoreからデータを取ってくる処理
-    const res = await db.collection("#コロナ").orderBy('point','desc').get()
+    const res = await db.collection("#COVID-19").orderBy('point','desc').get()
     this.datalists = res.docs.map(doc => doc.data())
     console.log(this.datalists)
   }
@@ -112,6 +121,11 @@ export default {
   margin: 0.5rem;
 }
 
+.profile-img{
+  border-radius: 50%;
+  border: 3px solid #000;
+}
+
 /* .card-img-top{
   height: 7rem;
 } */
@@ -140,9 +154,19 @@ export default {
   color: #000;
 }
 
+.friend-count{
+  display: flex;
+  justify-content: space-around;
+}
+
 .twitter-count{
   display: flex;
   justify-content: space-around;
+}
+
+.retweet-img{
+  vertical-align: text-bottom;
+  color: #15a858;
 }
 
 @media screen and (max-width: 767px){
