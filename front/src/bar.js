@@ -14,7 +14,6 @@ export default {
       type: Object,
       default: null,
       maintainAspectRatio: false,
-      
     }
   },
   mounted() {
