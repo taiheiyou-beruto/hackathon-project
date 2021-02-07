@@ -3,7 +3,7 @@
     <div class="center-border">
       <div class="container">
         <div class="row">
-          <div class="main-text-block col-lg-12 col-xs-12">
+          <div class="main-text-block text-center">
             <h1 class="main-text-h1">CIiT(COVID-19 Informations in Twitter)へようこそ！</h1>
           </div>
         </div>
@@ -85,10 +85,6 @@ export default {
   color: #fff;
 }
 
-.main-text-h2{
-  font-size: calc(10px + 2vw);
-}
-
 .terms{
   text-align: center;
   margin-top: 4rem;
@@ -103,13 +99,6 @@ export default {
 
 .modal-text{
   text-align-last: left;
-}
-
-footer{
-  width: 80%;
-  margin: 0 auto;
-  font-size: calc(10px + 1.2vw);
-  margin-top: 4rem;
 }
 
 @media screen and (max-width: 575px){
