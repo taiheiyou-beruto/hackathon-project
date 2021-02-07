@@ -6,7 +6,7 @@
           <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 card-block" v-for='item in datalists' :key="item.id">
             <div class="card bg-dark text-light rounded-lg h-100" style="width: 100%;">
               <div class="text-center card-image">
-                <img :src="item.profile_banner_url" class="card-img-top rounded-lg img-fluid" alt="Profile Image">
+                <img :src="item.profile_banner_url" class="card-img-top rounded-lg img-fluid" alt="背景画像が設定されていません">
               </div>
               <div class="card-body">
                 <p class="card-point">正確度偏差値: <span class="point">{{ item.point }}</span></p>
